@@ -32,13 +32,13 @@ classWriter{
   // Create a writer that will append data to "*dest".
   // "*dest" must be initially empty.
   // "*dest" must remain live while this Writer is in use.
-  explicitWriter(WritableFile* dest);
+  explicitWriter(FileWriter* dest);
   ~Writer();
 
   StatusAddRecord(constSlice& slice);
 
  private:
-  WritableFile* dest_;
+  FileWriter* dest_;
   int block_offset_;// Current offset in block
 
   // crc32c values for all supported record types.  These are
@@ -54,7 +54,7 @@ classWriter{
 };
 ```
 
-可以看到Writer除了构造函数和析构函数，只有一个公有的成员函数：`AddRecord` ，还有一个私有的辅助成员函数 `EmitPhysicalRecord`, 还有一个关键的成员变量：`WritableFile` ，我们来看看这两个成员函数都做了什么。
+可以看到Writer除了构造函数和析构函数，只有一个公有的成员函数：`AddRecord` ，还有一个私有的辅助成员函数 `EmitPhysicalRecord`, 还有一个关键的成员变量：`FileWriter` ，我们来看看这两个成员函数都做了什么。
 
 ## AddRecord
 
@@ -114,7 +114,7 @@ StatusWriter::AddRecord(constSlice& slice){
 
 ## EmitPhysicalRecord
 
-在 `EmitPhysicalRecord`中，首先封装记录头，然后计算校验码，再将数据写入到 `dest_`中。`dest_`是一个 `WritableFile`对象，WritableFile类封装文件的读写操作。
+在 `EmitPhysicalRecord`中，首先封装记录头，然后计算校验码，再将数据写入到 `dest_`中。`dest_`是一个 `FileWriter`对象，FileWriter类封装文件的读写操作。
 
 ```cpp
 StatusWriter::EmitPhysicalRecord(RecordType t,constchar* ptr,size_t n){
@@ -154,19 +154,19 @@ Status s = dest_->Append(Slice(buf, kHeaderSize));
 你肯定和我一样好奇 `dest_`是什么，成员变量 `dest_`的定义如下：
 
 ```cpp
-WritableFile* dest_;
+FileWriter* dest_;
 ```
 
-它是一个 `WritableFile`类型，而 `WritableFile` 自己也是一个抽象类。WritableFile的定义如下：
+它是一个 `FileWriter`类型，而 `FileWriter` 自己也是一个抽象类。FileWriter的定义如下：
 
 ```cpp
 // A file abstraction for sequential writing.  The implementation
 // must provide buffering since callers may append small fragments
 // at a time to the file.
-classWritableFile{
+classFileWriter{
  public:
-  WritableFile(){}
-  virtual~WritableFile();
+  FileWriter(){}
+  virtual~FileWriter();
 
   virtualStatusAppend(constSlice& data)=0;
   virtualStatusClose()=0;
@@ -175,12 +175,12 @@ classWritableFile{
 
  private:
   // No copying allowed
-  WritableFile(constWritableFile&);
-  voidoperator=(constWritableFile&);
+  FileWriter(constFileWriter&);
+  voidoperator=(constFileWriter&);
 };
 ```
 
-所以，我们得看看 `log::Writer` 的构造函数被调用的地方，才能知道 `WritableFile *dest_`中的 `dest_`到底是什么类型。
+所以，我们得看看 `log::Writer` 的构造函数被调用的地方，才能知道 `FileWriter *dest_`中的 `dest_`到底是什么类型。
 
 ```
 log_ =new log::Writer(lfile);
@@ -189,21 +189,21 @@ log_ =new log::Writer(lfile);
 `lfile` 的声明如下：
 
 ```
-WritableFile* lfile;
+FileWriter* lfile;
 ```
 
 `lfile` 的定义如下：
 
 ```
-s = options.env->NewWritableFile(LogFileName(dbname, new_log_number),
+s = options.env->NewFileWriter(LogFileName(dbname, new_log_number),
                                  &lfile);
 ```
 
-env_posix.cc文件中 `NewWritableFile` 的定义如下：
+env_posix.cc文件中 `NewFileWriter` 的定义如下：
 
 ```
-virtualStatusNewWritableFile(const std::string& fname,
-                                 WritableFile** result){
+virtualStatusNewFileWriter(const std::string& fname,
+                                 FileWriter** result){
     Status s;
     constint fd = open(fname.c_str(), O_CREAT | O_RDWR | O_TRUNC,0644);
     if(fd <0){
@@ -225,7 +225,7 @@ constint fd = open(fname.c_str(), O_CREAT | O_RDWR | O_TRUNC,0644);
 log::Writer是对日志文件的封装，说到底也只是要写一个文件，我们经历了千辛万苦，终于找到了打开文件的操作，这又将我们引入了levelDB的另一片天地：对可移植性的处理。你可能还在纳闷为什么下面的语句会调用env_posix.cc文件中 `PosixEnv`类的成员函数，那就一起来分析下 `options.env`吧。
 
 ```
-s = options.env->NewWritableFile(LogFileName(dbname, new_log_number),
+s = options.env->NewFileWriter(LogFileName(dbname, new_log_number),
                                      &lfile);
 ```
 
@@ -254,8 +254,8 @@ classEnv{
   // not exist, returns a non-OK status.
   //
   // The returned file will only be accessed by one thread at a time.
-  virtualStatusNewSequentialFile(const std::string& fname,
-                                   SequentialFile** result)=0;
+  virtualStatusNewFileReader(const std::string& fname,
+                                   FileReader** result)=0;
 
   // Create a brand new random access read-only file with the
   // specified name.  On success, stores a pointer to the new file in
@@ -274,8 +274,8 @@ classEnv{
   // returns non-OK.
   //
   // The returned file will only be accessed by one thread at a time.
-  virtualStatusNewWritableFile(const std::string& fname,
-                                 WritableFile** result)=0;
+  virtualStatusNewFileWriter(const std::string& fname,
+                                 FileWriter** result)=0;
 
   // Returns true iff the named file exists.
   virtualboolFileExists(const std::string& fname)=0;
@@ -400,7 +400,7 @@ Env*Env::Default(){
 上面这几行代码位于env_posix.cc 的最后几行，其实也没做什么，只是返回一个PosixEnv对象，PosixEnv对象是Env 的子类，所以，下面这句话调用的是PosixEnv的成员函数。
 
 ```
-s = options.env->NewWritableFile(LogFileName(dbname, new_log_number),
+s = options.env->NewFileWriter(LogFileName(dbname, new_log_number),
 	                                     &lfile);
 ```
 
@@ -420,7 +420,7 @@ https://github.com/balloonwj/CppGuide/blob/master/articles/leveldb%E6%BA%90%E7%A
 
 ## 类层次
 
-Reader主要用到了两个接口，一个是 **汇报错误的Reporter** ，另一个是log文件 **读取类SequentialFile** 。
+Reader主要用到了两个接口，一个是 **汇报错误的Reporter** ，另一个是log文件 **读取类FileReader** 。
 
 Reporter的接口只有 **一个** ：
 
@@ -428,7 +428,7 @@ Reporter的接口只有 **一个** ：
 void Corruption(size_t bytes,const Status& status);
 ```
 
-SequentialFile有**两个**接口：
+FileReader有**两个**接口：
 
 ```cpp
 Status Read(size_t n, Slice* result, char* scratch);
@@ -454,7 +454,7 @@ Slice   buffer_;               // 读取的内容
 
 Reader只有一个接口，那就是ReadRecord，下面来分析下这个函数。
 
-###### S1 根据initial offset跳转到调用者指定的位置，开始读取日志文件。跳转就是直接调用SequentialFile的Seek接口。
+###### S1 根据initial offset跳转到调用者指定的位置，开始读取日志文件。跳转就是直接调用FileReader的Seek接口。
 
 另外，需要先调整调用者传入的**initialoffset**参数，调整和跳转逻辑在SkipToInitialBlock函数中。
 

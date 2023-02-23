@@ -6,7 +6,7 @@
 
 namespace tinykv {
 class Slice;
-class WritableFile;
+class FileWriter;
 
 // Append a human-readable printout of "num" to *str
 void AppendNumberTo(std::string* str, uint64_t num);

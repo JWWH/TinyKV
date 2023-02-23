@@ -1,5 +1,5 @@
 #include "log_write.h"
-#include "../include/tinykv/env.h"
+#include "../file/file_writer.h"
 #include "../utils/crc32c.h"
 #include "../utils/codec.h"
 
@@ -11,7 +11,7 @@ static void InitTypeCrc(uint32_t* type_crc) {
 	}
 }
 
-Writer::Writer(WritableFile* dest)
+Writer::Writer(FileWriter* dest)
 	: dest_(dest)
 	, block_offset_(0)
 {

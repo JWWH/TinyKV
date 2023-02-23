@@ -5,14 +5,14 @@
 #include "../include/tinykv/status.h"
 
 namespace tinykv {
-// WritableFile是对log文件的抽象，是顺序写入文件	
-class WritableFile;
+// FileWriter是对log文件的抽象，是顺序写入文件	
+class FileWriter;
 
 class Writer {
 public:
-	explicit Writer(WritableFile* dest);
+	explicit Writer(FileWriter* dest);
 
-	Writer(WritableFile* dest, uint64_t dest_length);
+	Writer(FileWriter* dest, uint64_t dest_length);
 
 	Writer(const Writer&) = delete;
 	Writer& operator=(const Writer&) = delete;
@@ -23,9 +23,9 @@ public:
 
 private:
 	Status EmitPhysicalRecord(RecordType type, const char* ptr, size_t length);
-	// WritableFile这是一个文件操作的抽象类
+	// FileWriter这是一个文件操作的抽象类
 	// 是对不同操作系统的文件操作的抽象，不同操作系统实现也不一样，提供Write、Sync等接口。
-	WritableFile* dest_;
+	FileWriter* dest_;
 	// 写入是以Block为单位的，这个表示写入位置在当前block的偏移量，
 	// 比如这个block写了100个字节了，那么block_offset_就是100
 	int block_offset_;

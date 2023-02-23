@@ -1,5 +1,5 @@
 #include "log_read.h"
-#include "../include/tinykv/env.h"
+#include "../file/file_reader.h"
 #include "../utils/codec.h"
 #include "../utils/crc32c.h"
 
@@ -9,7 +9,7 @@ Reader::Reporter::~Reporter() = default;
 /**
  *  
  */
-Reader::Reader(SequentialFile* file, Reporter* reporter, bool checksum,
+Reader::Reader(FileReader* file, Reporter* reporter, bool checksum,
                uint64_t initial_offset)
     : file_(file),
       reporter_(reporter),

@@ -8,9 +8,9 @@
 
 namespace tinykv
 {
-// SequentialFile是抽象类， 顺序读取文件，定义在env.h中
+// FileReader是抽象类， 顺序读取文件，定义在env.h中
 // 顺序读取文件的抽象封装类
-class SequentialFile;
+class FileReader;
 
 class Reader {
 public:
@@ -28,7 +28,7 @@ public:
 	3.checksum: 是否check校验。
 	4.initial_offset：开始读取数据偏移位置。
 	 */
-	Reader(SequentialFile* file, Reporter* reporter, bool checksum,
+	Reader(FileReader* file, Reporter* reporter, bool checksum,
 		uint64_t initial_offset);
 
 	// 禁止拷贝构造和赋值构造
@@ -47,7 +47,7 @@ public:
 	uint64_t LastRecordOffset();
 
 private:
-	SequentialFile* const file_;
+	FileReader* const file_;
 	// 数据损坏报告
 	Reporter* const reporter_;
 	// 是否进行数据校验
@@ -103,4 +103,4 @@ private:
 	void ReportCorruption(size_t bytes, const char* reason);
 	void ReportDrop(size_t bytes, const Status& reason);
 };
-} // namespace tinykvclass SequentialFile;
+} // namespace tinykvclass FileReader;

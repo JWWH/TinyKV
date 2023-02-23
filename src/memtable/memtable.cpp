@@ -70,7 +70,7 @@ void MemTable::Add(SequenceNumber seq, ValueType type, const Slice& key, const S
 // 如果能找到key对应的value, 将该value存储到*value参数中，返回值为true。
 // 如果这个key中的有删除标识,存放一个NotFound()错误到*status参数中，返回值为true。
 // 否则返回值为false
-bool MemTable::Get(const LookupKey& key, std::string* value, Status* s) {
+bool MemTable::Get(const LookupKey& key, std::string* value, DBStatus* s) {
 	// 获取MemTable的键
 	// 得到memkey，memkey中实际上包含了klength|userkey|tag，也就是说它包含了internal_key_size和internal_key
 	Slice memKey = key.memtable_key();
@@ -116,7 +116,8 @@ bool MemTable::Get(const LookupKey& key, std::string* value, Status* s) {
 					return true;
 				}
 				case kTypeDeletion:
-					*s = Status::NotFound(Slice());
+					// *s = Status::NotFound(Slice());
+					*s = Status::kNotFound;
 					return true;
 			}
 		}

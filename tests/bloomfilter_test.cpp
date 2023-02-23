@@ -6,7 +6,7 @@
 #include <string>
 #include <iostream>
 
-static const std::vector<std::string> kTestKeys = {"corekv",  "corekv1", "corekv2"};
+static const std::vector<std::string> kTestKeys = {"tinykv",  "tinykv1", "tinykv2"};
 
 TEST(bloomFilterTest, CreateFilter)
 {

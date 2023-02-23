@@ -11,13 +11,13 @@
 #include "memory/area.h"
 
 using namespace std;
-using namespace corekv;
-static  vector<string> kTestKeys = {"corekv", "corekv1", "corekv2", "corekv3", "corekv4", "corekv5"};
+using namespace tinykv;
+static  vector<string> kTestKeys = {"tinykv", "tinykv1", "tinykv2", "tinykv3", "tinykv4", "tinykv5"};
 TEST(skiplistTest, Insert) {
-  corekv::LogConfig log_config;
-  log_config.log_type = corekv::LogType::CONSOLE;
+  tinykv::LogConfig log_config;
+  log_config.log_type = tinykv::LogType::CONSOLE;
   log_config.rotate_size = 100;
-  corekv::Log::GetInstance()->InitLog(log_config);
+  tinykv::Log::GetInstance()->InitLog(log_config);
   using Table = SkipList<const char*, ByteComparator, SimpleVectorAlloc>;
   ByteComparator byte_comparator;
   Table tb(byte_comparator);

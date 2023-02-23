@@ -6,6 +6,8 @@
 
 namespace tinykv {
 namespace crc32c {
+
+namespace{
 const uint32_t kByteExtensionTable[256] = {
     0x00000000, 0xf26b8303, 0xe13b70f7, 0x1350f3f4, 0xc79a971f, 0x35f1141c,
     0x26a1e7e8, 0xd4ca64eb, 0x8ad958cf, 0x78b2dbcc, 0x6be22838, 0x9989ab3b,
@@ -250,6 +252,29 @@ constexpr inline const uint8_t* RoundUp(const uint8_t* pointer) {
       ~static_cast<uintptr_t>(N - 1));
 }
 
+}
+
+static uint32_t AcceleratedCRC32C(uint32_t crc, const char* buf, size_t size) {
+#if HAVE_CRC32C
+  return ::crc32c::Extend(crc, reinterpret_cast<const uint8_t*>(buf), size);
+#else
+  // Silence compiler warnings about unused arguments.
+  (void)crc;
+  (void)buf;
+  (void)size;
+  return 0;
+#endif  // HAVE_CRC32C
+}
+// Determine if the CPU running this program can accelerate the CRC32C
+// calculation.
+static bool CanAccelerateCRC32C() {
+  // port::AcceleretedCRC32C returns zero when unable to accelerate.
+  static const char kTestCRCBuffer[] = "TestCRCBuffer";
+  static const char kBufSize = sizeof(kTestCRCBuffer) - 1;
+  static const uint32_t kTestCRCValue = 0xdcbc59fa;
+
+  return AcceleratedCRC32C(0, kTestCRCBuffer, kBufSize) == kTestCRCValue;
+}
 
 // Determine if the CPU running this program can accelerate the CRC32C
 // calculation.
