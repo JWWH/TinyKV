@@ -1,6 +1,9 @@
 #include "bloomfilter.h"
 #include "../utils/hash_util.h"
+#include "../utils/util.h"
+#include "../utils/codec.h"
 #include <cmath>
+#include <stdint.h>
 
 namespace tinykv{
 BloomFilter::BloomFilter(int32_t bits_per_key)
@@ -109,5 +112,32 @@ bool BloomFilter::MayMatch(const std::string& key, int32_t start_pos,
 		hash_val += delta;
 	}
 	return true;
+}
+bool BloomFilter::MayMatch(const std::string_view& key,
+                           const std::string_view& bf_datas) {
+  static constexpr uint32_t kFixedSize = 4;
+  // 先恢复k_
+  const auto& size = bf_datas.size();
+  if (size < kFixedSize || key.empty()) {
+    return false;
+  }
+  uint32_t k = util::DecodeFixed32(bf_datas.data() + size - kFixedSize);
+  if (k > 30) {
+    return true;
+  }
+  const int32_t bits = (size - kFixedSize) * 8;
+  std::string_view bloom_filter(bf_datas.data(), size - kFixedSize);
+  const char* cur_array = bloom_filter.data();
+  uint32_t hash_val = hash_util::SimMurMurHash(key.data(), key.size());
+  const uint32_t delta =
+      (hash_val >> 17) | (hash_val << 15);  // Rotate right 17 bits
+  for (int32_t j = 0; j < k; j++) {
+    const uint32_t bitpos = hash_val % bits;
+    if ((cur_array[bitpos / 8] & (1 << (bitpos % 8))) == 0) {
+      return false;
+    }
+    hash_val += delta;
+  }
+  return true;
 }
 }

@@ -38,6 +38,8 @@ DBStatus FileReader::Read(uint64_t offset, size_t n,
 		LOG(tinykv::LogLevel::ERROR, "Invalid Socket");
 		return Status::kInterupt;
 	}
+	// 原子读 
+	// 线程安全
 	pread(fd_, result, n, static_cast<off_t>(offset));
 	return Status::kSuccess;
 }

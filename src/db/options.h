@@ -31,7 +31,8 @@ struct Options {
 
 	std::shared_ptr<FilterPolicy> filter_policy = nullptr;
 	std::shared_ptr<Comparator> comparator = nullptr;
-	
+};
+struct ReadOptions {
 
 };
 

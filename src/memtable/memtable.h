@@ -32,7 +32,7 @@ public:
 	// 如果是删除操作，value应该没有任何值
 	void Add(SequenceNumber seq, ValueType type, const Slice& key, const Slice& value);
 	// 有写就得有读，提供的是查询键，输出对象值和状态，并返回是否成功
-	bool Get(const LookupKey& key, std::string* value, Status* s);
+	bool Get(const LookupKey& key, std::string* value, DBStatus* s);
 
 private:
 	// 设计模式，迭代器模式，C++ STL中容器和迭代器就是使用了迭代器模式，参考https://blog.csdn.net/weixin_45465612/article/details/118076401

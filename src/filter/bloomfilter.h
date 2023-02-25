@@ -15,13 +15,19 @@ public:
     // 判断key是否在过滤器中
     bool MayMatch(const std::string& key, int32_t start_pos,
 			int32_t len) override;
+    bool MayMatch(const std::string_view& key,
+                const std::string_view& bf_datas) override;
     const std::string& Data() override { return bloomfilter_data_; };
     // 返回当前过滤器底层对象的空间占用
     uint32_t Size() override { return bloomfilter_data_.size(); };
 
+    const FilterPolicyMeta& GetMeta() override { return filter_policy_meta_; }
+
 private:
     void CalcBloomBitsPerKey(int32_t entries_num, float positive = 0.01);
     void CalcHashNum();
+private:
+    FilterPolicyMeta filter_policy_meta_;
     // 每个key占用的bit位数
     int32_t bits_per_key_;
     // 哈希函数的个数
