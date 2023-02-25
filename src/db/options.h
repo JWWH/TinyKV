@@ -3,7 +3,8 @@
 #include <stdint.h>
 #include <string>
 #include <memory>
-
+#include "../cache/cache.h"
+#include "../table/data_block.h"
 
 
 namespace tinykv {
@@ -31,9 +32,11 @@ struct Options {
 
 	std::shared_ptr<FilterPolicy> filter_policy = nullptr;
 	std::shared_ptr<Comparator> comparator = nullptr;
+
+	Cache<uint64_t, DataBlock>* block_cache = nullptr;
 };
 struct ReadOptions {
-
+	
 };
 
 }

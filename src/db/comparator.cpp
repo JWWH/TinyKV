@@ -4,12 +4,7 @@
 #include <cmath>
 
 namespace tinykv {
-class ByteComparator final : public Comparator {
-public:
-	const char* Name() const override;
-	int32_t Compare(const Slice& a, const Slice& b) const override;
-	void FindShortestSeparator(std::string* start, const Slice& limit) const override;
-};
+
 
 const char* ByteComparator::Name() const {
 	static const std::string kByteComparator = "tinykv.ByteComparator";

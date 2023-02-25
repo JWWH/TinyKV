@@ -33,4 +33,35 @@ void Iterator::RegisterCleanup(CleanupFunction func, void* arg1, void* arg2) {
 	node->arg1 = arg1;
 	node->arg2 = arg2;
 }
+
+class EmptyIterator : public Iterator {
+ public:
+  EmptyIterator(const DBStatus& s) : status_(s) {}
+  ~EmptyIterator() override = default;
+
+  bool Valid() const override { return false; }
+  void Seek(const Slice& target) override {}
+  void SeekToFirst() override {}
+  void SeekToLast() override {}
+  void Next() override { assert(false); }
+  void Prev() override { assert(false); }
+  Slice key() const override {
+    assert(false);
+    return Slice();
+  }
+  Slice value() const override {
+    static const std::string kEmpty;
+    return kEmpty;
+  }
+  DBStatus status() const override { return status_; }
+
+ private:
+  DBStatus status_;
+};
+
+Iterator* NewEmptyIterator() { return new EmptyIterator(Status::kSuccess); }
+
+Iterator* NewErrorIterator(const DBStatus& status) {
+  return new EmptyIterator(status);
+}
 }

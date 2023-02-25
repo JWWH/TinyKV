@@ -22,4 +22,12 @@ public:
     // 这个接口和上一个接口很像，只是输出最短的比*key大的字符串，没有区间限制，如果比较简单的比较器可以实现为空函数
     virtual void FindShortSuccessor(std::string* key) const = 0;
 };
+
+// 按照字典序列
+class ByteComparator final : public Comparator {
+public:
+	const char* Name() const override;
+	int32_t Compare(const Slice& a, const Slice& b) const override;
+	void FindShortestSeparator(std::string* start, const Slice& limit) const override;
+};
 }

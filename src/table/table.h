@@ -17,7 +17,7 @@ public:
 	DBStatus Open(uint64_t file_size);
 	DBStatus ReadBlock(const OffSetInfo&, std::string&);
 	void ReadMeta(const FooterBuilder* footer);
-	void ReadFilter(const std::string_view& filter_handle_value);
+	void ReadFilter(const std::string& filter_handle_value);
 	Iterator* NewIterator(const ReadOptions&) const;
 	Iterator* BlockReader(const ReadOptions&, const std::string_view&);
 private:

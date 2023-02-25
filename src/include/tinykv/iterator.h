@@ -32,7 +32,7 @@ public:
     // 获取迭代器当前定位对象的值，前提是Valid()返回true
     virtual Slice value() const = 0;
     // 返回当前的状态
-    virtual Status status() const = 0;
+    virtual DBStatus status() const = 0;
     // 定义清理函数类型
     using CleanupFunction = void (*)(void* arg1, void* arg2);
     // 注册清理对象
@@ -54,4 +54,7 @@ private:
     // 所有需要清理的内容
     CleanupNode cleanup_head_;
 };	
+Iterator* NewEmptyIterator();
+Iterator* NewErrorIterator(const DBStatus& status);
+
 }
