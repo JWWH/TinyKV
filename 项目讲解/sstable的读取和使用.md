@@ -21,7 +21,6 @@ Table对外提供两个接口：
 
 ## Open
 
-
 ## NewIterator
 
 考虑下 sstable 的数据格式，不考虑 filter 的话，查找是一个二层递进的过程：
@@ -54,6 +53,17 @@ Iterator* NewTwoLevelIterator(
 `TwoLevelIterator`继承自 `Iterator`，实现了 `Seek/Prev/Next/key/value`等一系列接口。
 
 ### TwoLevelIterator
+
+二级迭代器的存在便于对SSTable的DataBlock数据进行访问，其结构如下：
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200614175126109.png#pic_center?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0g1MTQ0MzQ0ODU=,size_16,color_FFFFFF,t_70)
+
+对于SSTable来说：
+
+* Level_1是Index Block迭代器；
+* Level_2是指向DataBlock迭代器。
+
+通过这种设计，可以对SSTable的所有key进行向前扫描，向后扫描这种批量查询工作。
 
 正如其名，由两个 iter 组成，分别指向 index block，以及某个 data block.（注：`IteratorWrapper`封装了 `Iterator`，可以先简单认为是等价的。）
 

@@ -33,7 +33,7 @@ struct Options {
 	std::shared_ptr<FilterPolicy> filter_policy = nullptr;
 	std::shared_ptr<Comparator> comparator = nullptr;
 
-	Cache<uint64_t, DataBlock>* block_cache = nullptr;
+	Cache<Slice, DataBlock>* block_cache = nullptr;
 };
 struct ReadOptions {
 	

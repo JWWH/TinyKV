@@ -119,7 +119,7 @@ struct Status {
   Status() = delete;
   ~Status() = delete;
 
-  static constexpr DBStatus kSuccess; = {1000, "Success"};
+  static constexpr DBStatus kSuccess = {1000, "Success"};
   static constexpr DBStatus kNotFound = {1001, "Not Found"};
   static constexpr DBStatus kInterupt = {1002, "Interrupt"};
   static constexpr DBStatus kBadBlock = {1003, "Bad Block"};
